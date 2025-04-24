@@ -13,15 +13,15 @@ public class Game {
       tiles[i] = i+1;
     }
     do {
-      for (int i = size - 2; i > 0; i--) {
-        int j = rand.nextInt(i + 1);
+      for (int i = size - 2; i > 3; i--) {
+        int j = rand.nextInt(i +1);
         int temp = tiles[i];
         tiles[i] = tiles[j];
         tiles[j] = temp;
       }
     } while (countInversions() % 2 != 0);
     tiles[size-1] = 0;
-    System.out.println("premutacja początkowa:");
+    System.out.println("permutacja początkowa:");
     printGame(tiles);
   }
   private int countInversions(){

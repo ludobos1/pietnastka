@@ -5,6 +5,7 @@ public class AStar {
   private Heuristic heuristic;
   private int edge;
   int[] solved;
+  long solvedKey;
   public AStar(Game game, Heuristic heuristic) {
     this.boardSize = game.size;
     this.heuristic = heuristic;
@@ -16,22 +17,35 @@ public class AStar {
       solved[i] = i+1;
     }
     solved[boardSize-1] = 0;
-    PriorityQueue<Node> open = new PriorityQueue<>(Comparator.comparingInt(n -> n.f));
-    Set<Node> closed = new HashSet<>();
-    Node firstNode = new Node(tiles, null, 0, heuristic.calculateHeuristic(tiles));
+    //solvedKey = Arrays.toString(solved);
+    this.solvedKey = Node.encode(solved);
+    Comparator<Node> cmp = Comparator
+            .comparingInt((Node n) -> n.f)
+            .thenComparingInt(n -> -n.g);
+    BucketQueue open = new BucketQueue();
+    Set<Long> closed = new HashSet<>();
+    Map<Long, Node> openMap = new HashMap<>();
+    int h = heuristic.calculateHeuristic(tiles);
+    Node firstNode = new Node(tiles, null, 0, h, h, boardSize-1);
     open.add(firstNode);
+    openMap.put(firstNode.key, firstNode);
     while(!open.isEmpty()){
       Node current = open.poll();
-      if(isSolved(current.state)){
+      openMap.remove(current.key);
+      if(isSolved(current.key)){
         return path(current);
       }
-      closed.add(current);
+      closed.add(current.key);
       for(Node neighbor : findNeighbours(current)){
-        if (closed.contains(neighbor)) continue;
-        Optional<Node> existing = open.stream().filter(n -> Arrays.equals(n.state, neighbor.state)).findFirst();
-        if (existing.isEmpty() || neighbor.g < existing.get().g) {
-          open.remove(existing.orElse(null));
+        if (closed.contains(neighbor.key)) continue;
+        Node inOpen = openMap.get(neighbor.key);
+        if (inOpen == null || neighbor.g < inOpen.g) {
+          if (inOpen != null) {
+            open.remove(inOpen);
+            openMap.remove(neighbor.key);
+          }
           open.add(neighbor);
+          openMap.put(neighbor.key, neighbor);
         }
       }
     }
@@ -42,7 +56,7 @@ public class AStar {
     Node temp = current;
     List<int[]> path = new LinkedList<>();
     do {
-      path.add(temp.state);
+      path.addFirst(temp.state);
       temp = temp.parent;
     }while(temp!=null);
     return path;
@@ -50,7 +64,7 @@ public class AStar {
 
   private List<Node> findNeighbours(Node current){
     List<Node> neighbors = new ArrayList<>();
-    int zeroIndex = findZero(current.state);
+    int zeroIndex = current.zeroPos;
     int x = zeroIndex % edge;
     int y = zeroIndex / edge;
     int[][] moves = { {0,1}, {1,0}, {0,-1}, {-1,0} };
@@ -61,23 +75,18 @@ public class AStar {
       if (nx >= 0 && nx < edge && ny >= 0 && ny < edge) {
         int newIndex = ny * edge + nx;
         int[] newState = Arrays.copyOf(current.state, current.state.length);
-        newState[zeroIndex] = newState[newIndex];
+        int tile =newState[newIndex];
+        newState[zeroIndex] = tile;
         newState[newIndex] = 0;
         int g = current.g + 1;
-        int h = heuristic.calculateHeuristic(newState);
-        neighbors.add(new Node(newState, current, g, g + h));
+        int h = heuristic.calculateHeuristicInc(newIndex,zeroIndex,tile,current.h);
+        neighbors.add(new Node(newState, current, g, g + h,h,newIndex));
       }
     }
     return neighbors;
   }
 
-  private boolean isSolved(int[] currState){
-    return Arrays.equals(currState, solved);
+  private boolean isSolved(long currStateKey){
+    return currStateKey==solvedKey;
   }
-  private int findZero(int[] state) {
-    for (int i = 0; i < state.length; i++)
-      if (state[i] == 0) return i;
-    return -1;
-  }
-
 }

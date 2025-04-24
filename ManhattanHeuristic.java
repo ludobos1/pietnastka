@@ -15,4 +15,10 @@ public class ManhattanHeuristic implements Heuristic {
     }
     return heuristic;
   }
+  @Override
+  public int calculateHeuristicInc(int newIndex, int zeroPos, int tile, int h) {
+    int oldDist = Math.abs((tile-1)%boardSize-newIndex%boardSize) + Math.abs((tile-1)/boardSize-newIndex/boardSize);
+    int newDist = Math.abs((tile-1)%boardSize - zeroPos%boardSize) + Math.abs((tile-1)/boardSize-zeroPos/boardSize);
+    return h + (newDist - oldDist);
+  }
 }

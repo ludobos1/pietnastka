@@ -10,10 +10,11 @@ public class Test {
 
     List<int[]> solution = solver.solve(game.tiles);
 
-    for (int i = solution.size() - 1; i >= 0; i--) {
+    for (int[] step : solution) {
       System.out.println("============");
-      game.printGame(solution.get(i));
+      game.printGame(step);
     }
+    System.out.println(solution.size());
     long endTime = System.currentTimeMillis();
     System.out.println("Time taken: " + (endTime - startTime)/1000 + "s");
   }
