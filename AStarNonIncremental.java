@@ -1,16 +1,16 @@
 import java.util.*;
 
-public class AStar {
+public class AStarNonIncremental {
   private final int boardSize;
-  private IncrementalHeuristic heuristic;
+  private Heuristic heuristic;
   private int edge;
   int[] solved;
   long solvedKey;
   int neighboursGenerated=0;
   int visited;
   int neighboursGeneratedAndSaved=0;
-  final int manhattanMaxF = 155;
-  public AStar(Game game, IncrementalHeuristic heuristic) {
+  final int LinearMaxF = 251;
+  public AStarNonIncremental(Game game, Heuristic heuristic) {
     this.boardSize = game.size;
     this.heuristic = heuristic;
     edge = (int) Math.sqrt(boardSize);
@@ -24,7 +24,7 @@ public class AStar {
     //solvedKey = Arrays.toString(solved);
     this.solvedKey = Node.encode(solved);
     BucketQueue open;
-    open = new BucketQueue(manhattanMaxF);
+    open = new BucketQueue(LinearMaxF);
     Set<Long> closed = new HashSet<>();
     Map<Long, Node> openMap = new HashMap<>();
     int h = heuristic.calculateHeuristic(tiles);
@@ -84,7 +84,7 @@ public class AStar {
         newState[zeroIndex] = tile;
         newState[newIndex] = 0;
         int g = current.g + 1;
-        int h = heuristic.calculateHeuristicInc(newIndex,zeroIndex,tile,current.h);
+        int h = heuristic.calculateHeuristic(newState);
         neighbors.add(new Node(newState, current, g, g + h,h,newIndex));
       }
     }

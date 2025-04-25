@@ -1,4 +1,4 @@
-public class ManhattanHeuristic implements Heuristic {
+public class ManhattanHeuristic implements IncrementalHeuristic {
   private final int boardSize;
 
   public ManhattanHeuristic(int boardSize) {

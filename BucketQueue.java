@@ -4,9 +4,9 @@ public class BucketQueue {
   private List<LinkedHashSet<Node>> buckets;
   private int minF=0;
 
-  public BucketQueue() {
-    buckets = new ArrayList<>(155);
-    for (int i = 0; i <= 155; i++) {
+  public BucketQueue(int maxF) {
+    buckets = new ArrayList<>(maxF);
+    for (int i = 0; i <= maxF; i++) {
       buckets.add(new LinkedHashSet<>());
     }
   }
