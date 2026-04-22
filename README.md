@@ -5,4 +5,6 @@ for compilation and:
 java Test100  
 java TestNonInc  
 to launch tests.  
-In some instances algorithm might exceed heap space due to too many generated neighbours. To prevent this you might use options "-Xms$g -Xmx$g" where '$' is how much ram space you are willing to assign initially and maximally to the programme.
+In some instances algorithm might exceed heap space due to too many generated neighbours. To prevent this you might use options "-Xms$g -Xmx$g" where '$' is how much ram space you are willing to assign initially and maximally to the programme.  
+example:  
+java -Xms1g -Xmx8g TestEkstremalny
