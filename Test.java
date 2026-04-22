@@ -5,15 +5,15 @@ public class Test {
     long startTime = System.currentTimeMillis();
     Game game = new Game(4);
     game.generateGame();
-    Heuristic manhattan = new ManhattanHeuristic(4);
+    IncrementalHeuristic manhattan = new ManhattanHeuristic(4);
     AStar solver = new AStar(game, manhattan);
-
     List<int[]> solution = solver.solve(game.tiles);
 
-    for (int i = solution.size() - 1; i >= 0; i--) {
+    for (int[] step : solution) {
       System.out.println("============");
-      game.printGame(solution.get(i));
+      game.printGame(step);
     }
+    System.out.println(solution.size() - 1);
     long endTime = System.currentTimeMillis();
     System.out.println("Time taken: " + (endTime - startTime)/1000 + "s");
   }

@@ -1,25 +1,27 @@
 import java.util.*;
 
 /**
- * Implementation of the A* search algorithm for solving sliding tile puzzles
- * (e.g., 8-puzzle, 15-puzzle).
+ * Implementation of the A* search algorithm for sliding tile puzzles
+ * (e.g., 8-puzzle, 15-puzzle) using a non-incremental heuristic.
  *
- * The algorithm searches for the shortest sequence of moves from a given
- * starting board to the solved configuration using an admissible heuristic.
- * This implementation uses an incremental heuristic to efficiently update
- * heuristic values after each move.
+ * Unlike the incremental version, this implementation recomputes the
+ * heuristic value from scratch for every generated neighbor state.
  *
- * The open set (frontier) is stored in a bucket-based priority queue ordered
- * by f = g + h. The closed set stores already visited states together with
- * the best known cost to reach them.
+ * The algorithm searches for the shortest sequence of moves from the
+ * given starting board to the solved configuration using a heuristic
+ * function that estimates the remaining cost.
+ *
+ * The open set (frontier) is stored in a bucket-based priority queue
+ * ordered by f = g + h. The closed set stores visited states together
+ * with the best known cost to reach them.
  */
-public class AStar {
+public class AStarNonIncremental {
 
   /** Total number of positions on the board (size × size). */
   private final int boardSize;
 
   /** Heuristic used to estimate remaining cost. */
-  private IncrementalHeuristic heuristic;
+  private Heuristic heuristic;
 
   /** Width/height of the board. */
   private int edge;
@@ -36,19 +38,19 @@ public class AStar {
   /** Number of visited states (closed set size). */
   int visited;
 
-  /** Number of generated neighbors that were actually added to open set. */
+  /** Number of generated neighbors that were added to the open set. */
   int neighboursGeneratedAndSaved = 0;
 
-  /** Maximum expected f value for the bucket queue (tuned for Manhattan). */
-  final int manhattanMaxF = 155;
+  /** Maximum expected f value for the bucket queue (tuned for linear conflict). */
+  final int LinearMaxF = 251;
 
   /**
    * Creates an A* solver for a given game and heuristic.
    *
    * @param game puzzle definition
-   * @param heuristic heuristic with incremental update support
+   * @param heuristic heuristic function
    */
-  public AStar(Game game, IncrementalHeuristic heuristic) {
+  public AStarNonIncremental(Game game, Heuristic heuristic) {
     this.boardSize = game.size;
     this.heuristic = heuristic;
     edge = (int) Math.sqrt(boardSize);
@@ -71,12 +73,13 @@ public class AStar {
 
     solvedKey = Node.encode(solved);
 
-    BucketQueue open = new BucketQueue(manhattanMaxF);
+    BucketQueue open = new BucketQueue(LinearMaxF);
     Map<Long, Integer> closed = new HashMap<>();
     Map<Long, Node> openMap = new HashMap<>();
 
     int h = heuristic.calculateHeuristic(tiles);
-    Node firstNode = new Node(tiles, null, 0, h, h, boardSize - 1);
+
+    Node firstNode = new Node(tiles, null, 0, h, h, findZero(tiles));
 
     open.add(firstNode);
     openMap.put(firstNode.key, firstNode);
@@ -140,6 +143,8 @@ public class AStar {
    * Generates all valid neighboring states by moving the empty tile
    * in four possible directions (up, down, left, right).
    *
+   * The heuristic is recalculated from scratch for each neighbor.
+   *
    * @param current current node
    * @return list of neighboring nodes
    */
@@ -166,7 +171,7 @@ public class AStar {
         newState[newIndex] = 0;
 
         int g = current.g + 1;
-        int h = heuristic.calculateHeuristicInc(newIndex, zeroIndex, tile, current.h);
+        int h = heuristic.calculateHeuristic(newState);
 
         neighbors.add(new Node(newState, current, g, g + h, h, newIndex));
       }
@@ -183,5 +188,20 @@ public class AStar {
    */
   private boolean isSolved(long currStateKey) {
     return currStateKey == solvedKey;
+  }
+
+  /**
+   * Finds the index of the empty tile (0) in the board.
+   *
+   * @param tiles board state
+   * @return index of the empty tile, or -1 if not found
+   */
+  private int findZero(int[] tiles) {
+    int i = 0;
+    for (int tile : tiles) {
+      if (tile == 0) return i;
+      i++;
+    }
+    return -1;
   }
 }
