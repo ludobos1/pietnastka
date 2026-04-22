@@ -7,7 +7,6 @@ public class Test {
     game.generateGame();
     IncrementalHeuristic manhattan = new ManhattanHeuristic(4);
     AStar solver = new AStar(game, manhattan);
-
     List<int[]> solution = solver.solve(game.tiles);
 
     for (int[] step : solution) {
